@@ -10,15 +10,56 @@ class NightPy:
         self.api_token = self.create_token(client_id, client_secret, code)
         self.client_data = [client_id, client_secret, code]
 
+    # -------------------------------------------------------------------------
+    # NIGHTBOT API
+    # -------------------------------------------------------------------------
+    '''
+    Request Nightbot API
+    '''
+    def api_request(self, endpoint, method='get', payload=None):
+        method = method.lower()
+
+        if payload is None:
+            payload = ''
+
+        header = 'Authorization: Bearer {0}'.format(self.api_token[0])
+        try:
+            if method is 'head':
+                response = requests.head('{0}{1}'.format(self.api_uri, endpoint), headers=header)
+            elif method is 'delete':
+                response = requests.delete('{0}{1}'.format(self.api_uri, endpoint), headers=header)
+            elif method is 'get':
+                response = requests.get('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
+            elif method is 'options':
+                response = requests.options('{0}{1}'.format(self.api_uri, endpoint), headers=header)
+            elif method is 'post':
+                response = requests.post('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
+            elif method is 'put':
+                response = requests.put('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
+            else:
+                response = None
+
+            if response.status_code == 200:
+                return json.loads(response.text)
+            else:
+                return None
+
+        except requests.HTTPError:
+            print('HTTP Error occurred while trying to make request to Nightbot API.')
+            return None
+
+    # -------------------------------------------------------------------------
+    # OAUTH2
+    # -------------------------------------------------------------------------
     '''
     Create token from client_id, client_secret, code
     '''
-    def create_token(self, identification, secret, code):
+    def create_token(self, identification, secret, redirect_uri, code):
         payload = {
             'client_id': identification,
             'client_secret': secret,
             'grant_type': 'authorization_code',
-            'redirect_uri': '',
+            'redirect_uri': redirect_uri,
             'code': code
         }
         try:
@@ -69,39 +110,189 @@ class NightPy:
             return None
 
     '''
-    Request Nightbot API
+    Revokes token
     '''
-    def api_request(self, endpoint, method='get', payload=None):
-        method = method.lower()
-        
-        if payload is None:
-            payload = ''
+    def revoke_token(self):
+        payload = {'token': self.api_token[0]}
 
-        header = 'Authorization: Bearer {0}'.format(self.api_token[0])
         try:
-            if method is 'head':
-                response = requests.head('{0}{1}'.format(self.api_uri, endpoint), headers=header)
-            elif method is 'delete':
-                response = requests.delete('{0}{1}'.format(self.api_uri, endpoint), headers=header)
-            elif method is 'get':
-                response = requests.get('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
-            elif method is 'options':
-                response = requests.options('{0}{1}'.format(self.api_uri, endpoint), headers=header)
-            elif method is 'post':
-                response = requests.post('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
-            elif method is 'put':
-                response = requests.put('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
-            else:
-                response = None
-
+            response = requests.post('{0}/revoke'.format(self.token_uri), payload=payload)
             if response.status_code == 200:
-                return json.loads(response.text)
-            else:
-                return None
-
+                print('Token has been revoked')
         except requests.HTTPError:
-            print('HTTP Error occurred while trying to make request to Nightbot API.')
+            print('HTTP Error occurred while trying to revoke access token.')
+
+    # -------------------------------------------------------------------------
+    # SCOPE: CHANNEL
+    # -------------------------------------------------------------------------
+    '''
+    Gets the current API user's channel information
+    '''
+    def get_channel(self):
+        return self.api_request('channel', method='get')
+
+    '''
+    Makes Nightbot join (enter) the current user's channel
+    '''
+    def join_channel(self):
+        return self.api_request('channel/join', method='post')
+
+    '''
+    Makes Nightbot part (leave) the current user's channel
+    '''
+    def part_channel(self):
+        return self.api_request('channel/part', method='post')
+
+    # -------------------------------------------------------------------------
+    # SCOPE: CHANNEL SEND
+    # -------------------------------------------------------------------------
+    '''
+    Makes Nightbot send a message to the channel
+    '''
+    def send_channel_mesage(self, message):
+        payload = {'message': '{0}'.format(message)}
+        return self.api_request('channel/send', method='post', payload=payload)
+
+    # -------------------------------------------------------------------------
+    # SCOPE: COMMANDS
+    # -------------------------------------------------------------------------
+    '''
+    Gets the current API user's custom commands list
+    '''
+    def get_custom_commands(self):
+        return self.api_request('commands', method='get')
+
+    '''
+    Adds a new custom command to the current user's channel
+    '''
+    def add_new_custom_command(self, cool_down, message, command_name, user_level='everyone'):
+        payload = {
+            'coolDown': cool_down,
+            'message': '{0}'.format(message),
+            'name': '(0}'.format(command_name),
+            'userLevel': '(0}'.format(user_level.lower())
+        }
+        return self.api_request('commands', method='post', payload=payload)
+
+    '''
+    Looks up a custom command by id
+    '''
+    def get_custom_command_by_id(self, identification):
+        return self.api_request('commands/{0}'.format(identification), method='get')
+
+    '''
+    Edits a custom command by its id
+    Defaults: cool_down=30, count=0, message='', name='', user_level='everyone'
+    '''
+    def edit_custom_command_by_id(self, identification,
+                                  cool_down=None, count=None, message=None, name=None, user_level=None):
+        payload = {}
+
+        if cool_down is not None:
+            payload['coolDown'] = cool_down
+        if count is not None:
+            payload['count'] = count
+        if message is not None:
+            payload['message'] = '{0}'.format(message)
+        if name is not None:
+            payload['name'] = '{0}'.format(name)
+        if user_level is not None:
+            payload['userLevel'] = '{0}'.format(user_level)
+
+        if len(payload) > 0:
+            return self.api_request('commands/{0}'.format(identification), method='put', payload=payload)
+        else:
             return None
+
+    '''
+    Deletes a custom command by id
+    '''
+    def delete_custom_command_by_id(self):
+        return self.api_request('commands/id', method='delete')
+
+    # -------------------------------------------------------------------------
+    # SCOPE: COMMANDS DEFAULT
+    # -------------------------------------------------------------------------
+    '''
+    Gets the current API user's default commands list
+    '''
+    def get_default_commands(self):
+        return self.api_request('commands/default', method='get')
+
+    '''
+    Looks up a default command by name
+    '''
+    def get_default_command_by_name(self, name):
+        return self.api_request('commands/default/{0}'.format(name), method='get')
+
+    '''
+    Edits a default command by its name
+    '''
+    def edit_default_command_by_name(self, name, cool_down=None, enabled=None, user_level=None):
+        payload = {}
+
+        if cool_down is not None:
+            payload['coolDown'] = cool_down
+        if enabled is not None:
+            payload['enabled'] = str(enabled).lower()
+        if user_level is not None:
+            payload['userLevel'] = '{0}'.format(user_level)
+
+        if len(payload) > 0:
+            return self.api_request('commands/default/{0}'.format(name), method='put', payload=payload)
+
+    # -------------------------------------------------------------------------
+    # SCOPE: ME
+    # -------------------------------------------------------------------------
+    '''
+    Gets the current API user's information
+    '''
+    def get_current_user(self):
+        return self.api_request('me', method='get')
+
+    # -------------------------------------------------------------------------
+    # SCOPE: REGULARS
+    # -------------------------------------------------------------------------
+    '''
+    Gets the current API user's regulars list
+    '''
+    def get_regulars(self, limit=None, offset=None, query=None):
+        query_parameters = ''
+
+        if limit is not None:
+            if limit > 100:
+                limit = 100
+            if limit < 1:
+                limit = 1
+            query_parameters += '&limit={0}'.format(limit)
+        if offset is not None:
+            query_parameters += '&offset={0}'.format(offset)
+        if query is not None:
+            query_parameters += '&query={0}'.format(query)
+        if len(query_parameters) > 0:
+            query_parameters = '?{0}'.format(query_parameters[1:])
+
+        return self.api_request('regulars{0}'.format(query_parameters), method='get')
+
+    '''
+    Adds a new regular to the current user's channel
+    '''
+    def add_new_regular(self, name):
+        payload = {'name': '{0}'.format(name)}
+
+        return self.api_request('regulars', method='post', payload=payload)
+
+    '''
+    Looks up a regular by id
+    '''
+    def get_regular_by_id(self, identification):
+        return self.api_request('regulars/{0}'.format(identification), method='get')
+
+    '''
+    Deletes a regular by id
+    '''
+    def delete_regular_by_id(self, identification):
+        return self.api_request('regulars/{0}'.format(identification), method='delete')
 
     # -------------------------------------------------------------------------
     # SCOPE: SONG REQUESTS
@@ -148,20 +339,30 @@ class NightPy:
         }
         return self.api_request('song_requests', method='put', payload=payload)
 
+    # -------------------------------------------------------------------------
+    # SCOPE: SONG REQUESTS PLAYLIST
+    # -------------------------------------------------------------------------
     '''
     Gets the current API user's song request playlist
     '''
-    def get_playlist(self, direction='desc', limit=100, offset=0, query='', sort_by='date'):
+    def get_playlist(self, direction=None, limit=None, offset=None, query=None, sort_by=None):
+        query_parameters = ''
 
-        payload = {
-            'direction': direction.lower(),
-            'limit': limit,
-            'offset': offset,
-            'q': query,
-            'sort_by': sort_by
-        }
+        if direction is not None:
+            query_parameters += '&direction={0}'.format(direction)
+        if limit is not None:
+            query_parameters += '&limit={0}'.format(limit)
+        if offset is not None:
+            query_parameters += '&offset={0}'.format(offset)
+        if query is not None:
+            query_parameters += '&q={0}'.format(query)
+        if sort_by is not None:
+            query_parameters += '&sort_by={0}'.format(sort_by)
 
-        return self.api_request('song_requests/playlist', method='get', payload=payload)
+        if len(query_parameters) > 0:
+            query_parameters = '?{0}'.format(query_parameters[1:])
+
+        return self.api_request('song_requests/playlist{0}'.format(query_parameters), method='get')
 
     '''
     Adds a new playlist item to the current user’s channel.
@@ -189,14 +390,17 @@ class NightPy:
     Looks up a song request playlist item by id
     '''
     def get_playlist_item_by_id(self, identification):
-        return self.api_request('song_requests/playlist/:{0}'.format(identification), method='get')
+        return self.api_request('song_requests/playlist/{0}'.format(identification), method='get')
 
     '''
     Deletes a song requests playlist item by id
     '''
     def delete_playlist_item_by_id(self, identification):
-        return self.api_request('song_requests/playlist/:{0}'.format(identification), method='delete')
+        return self.api_request('song_requests/playlist/{0}'.format(identification), method='delete')
 
+    # -------------------------------------------------------------------------
+    # SCOPE: SONG REQUESTS QUEUE
+    # -------------------------------------------------------------------------
     '''
     Gets the current API user’s song request queue
     '''
@@ -227,16 +431,155 @@ class NightPy:
     Looks up a song request queue item by id
     '''
     def get_queue_item_by_id(self, identification):
-        return self.api_request('song_requests/queue/:{0}'.format(identification), method='get')
+        return self.api_request('song_requests/queue/{0}'.format(identification), method='get')
 
     '''
     Deletes a song requests queue item by id
     '''
     def delete_queue_item_by_id(self, identification):
-        return self.api_request('song_requests/queue/:{0}'.format(identification), method='delete')
+        return self.api_request('song_requests/queue/{0}'.format(identification), method='delete')
 
     '''
     Promotes a queue item to the front of the queue
     '''
     def promote_queue_item(self, identification):
-        return self.api_request('song_requests/queue/:{0}/promote'.format(identification), method='post')
+        return self.api_request('song_requests/queue/{0}/promote'.format(identification), method='post')
+
+    # -------------------------------------------------------------------------
+    # SCOPE: SPAM PROTECTION
+    # -------------------------------------------------------------------------
+    '''
+    Gets the current API user's spam protection filters list
+    '''
+    def get_filters(self):
+        return self.api_request('spam_protection', method='get')
+
+    '''
+    Looks up a spam protection filter by type
+    '''
+    def get_filter_by_type(self, type):
+        return self.api_request('spam_protection/{0}'.format(type), method='get')
+
+    '''
+    Edits a spam protection filter by its type
+    '''
+    def edit_filter_by_type(self, type, blacklist=None, enabled=None, exempt_user_level=None, length=None, limit=None,
+                            message=None, silent=None, whitelist=None):
+        payload = {}
+        if blacklist is not None:
+            payload['blacklist'] = '{0}'.format(blacklist)
+        if enabled is not None:
+            payload['enabled'] = str(enabled).lower()
+        if exempt_user_level is not None:
+            payload['exemptUserLevel'] = '{0}'.format(exempt_user_level)
+        if length is not None:
+            payload['length'] = length
+        if limit is not None:
+            payload['limit'] = limit
+        if message is not None:
+            payload['message'] = '{0}'.format(message)
+        if silent is not None:
+            payload['silent'] = str(silent).lower()
+        if whitelist is not None:
+            payload['whitelist'] = '{0}'.format(whitelist)
+
+        if len(payload) > 0:
+            return self.api_request('spam_protection/{0}'.format(type), method='put', payload=payload)
+        else:
+            return None
+
+    # -------------------------------------------------------------------------
+    # SCOPE: SUBSCRIBERS
+    # -------------------------------------------------------------------------
+    '''
+    Gets the current API user's subscribers list
+    '''
+    def get_subscribers(self, limit=None, offset=None, display_name=None):
+        query_parameters = ''
+
+        if limit is not None:
+            query_parameters += '&limit={0}'.format(limit)
+        if offset is not None:
+            query_parameters += '&offset={0}'.format(offset)
+        if display_name is not None:
+            query_parameters += '&q={0}'.format(display_name)
+        if len(query_parameters) > 0:
+            query_parameters = '?{0}'.format(query_parameters[1:])
+
+        return self.api_request('subscribers{0}'.format(query_parameters), method='get')
+
+    '''
+    Adds a new subscriber to the current user's channel
+    '''
+    def add_new_subscriber(self, name):
+        payload = {'name': '{0}'.format(name)}
+        return self.api_request('subscribers', method='post', payload=payload)
+
+    '''
+    Looks up a subscriber by id
+    '''
+    def get_subscriber_by_id(self, identification):
+        return self.api_request('subscribers/{0}'.format(identification), method='get')
+
+    '''
+    Deletes a subscriber by id
+    '''
+    def delete_subscriber_by_id(self, identification):
+        return self.api_request('subscribers/{0}'.format(identification), method='delete')
+
+    # -------------------------------------------------------------------------
+    # SCOPE: TIMERS
+    # -------------------------------------------------------------------------
+    '''
+    Gets the current API user's timers list
+    '''
+    def get_timers(self):
+        return self.api_request('timers', method='get')
+
+    '''
+    Adds a new timer to the current user's channel
+    '''
+    def add_new_timer(self, interval, lines, message, name, enabled=True):
+        payload = {
+            'enabled': str(enabled).lower(),
+            'interval': '{0}'.format(interval),
+            'lines': '{0}'.format(lines),
+            'message': '{0}'.format(message),
+            'name': '{0}'.format(name)
+        }
+
+        return self.api_request('timers', method='post', payload=payload)
+
+    '''
+    Looks up a timer by id
+    '''
+    def get_timer_by_id(self, identification):
+        return self.api_request('timers/{0}'.format(identification), method='get')
+
+    '''
+    Edits a timer by its id
+    '''
+    def edit_timer_by_id(self, identification, interval=None, lines=None, message=None, name=None, enabled=None):
+        payload = {}
+
+        if interval is not None:
+            payload['interval'] = '{0}'.format(interval)
+        if lines is not None:
+            payload['lines'] = '{0}'.format(lines)
+        if message is not None:
+            payload['message'] = '{0}'.format(message)
+        if name is not None:
+            payload['name'] = '{0}'.format(name)
+        if enabled is not None:
+            payload['enabled'] = '{0}'.format(enabled).lower()
+
+        if len(payload) > 0:
+            return self.api_request('timers/{0}'.format(identification), method='put', payload=payload)
+        else:
+            return None
+
+    '''
+    Deletes a timer by id
+    '''
+    def delete_timer_by_id(self, identification):
+        return self.api_request('timers/{0}'.format(identification), method='delete')
