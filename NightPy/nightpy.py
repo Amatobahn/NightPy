@@ -2,7 +2,7 @@ import requests
 import json
 
 
-class Nightbot:
+class NightPy:
 
     def __init__(self, api_token):
         self.api_uri = 'https://api.nightbot.tv/1/'
