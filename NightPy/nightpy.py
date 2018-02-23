@@ -457,14 +457,14 @@ class NightPy:
     '''
     Looks up a spam protection filter by type
     '''
-    def get_filter_by_type(self, type):
-        return self.api_request('spam_protection/{0}'.format(type), method='get')
+    def get_filter_by_type(self, filter_type):
+        return self.api_request('spam_protection/{0}'.format(filter_type), method='get')
 
     '''
     Edits a spam protection filter by its type
     '''
-    def edit_filter_by_type(self, type, blacklist=None, enabled=None, exempt_user_level=None, length=None, limit=None,
-                            message=None, silent=None, whitelist=None):
+    def edit_filter_by_type(self, filter_type, blacklist=None, enabled=None, exempt_user_level=None, length=None,
+                            limit=None, message=None, silent=None, whitelist=None):
         payload = {}
         if blacklist is not None:
             payload['blacklist'] = '{0}'.format(blacklist)
@@ -484,7 +484,7 @@ class NightPy:
             payload['whitelist'] = '{0}'.format(whitelist)
 
         if len(payload) > 0:
-            return self.api_request('spam_protection/{0}'.format(type), method='put', payload=payload)
+            return self.api_request('spam_protection/{0}'.format(filter_type), method='put', payload=payload)
         else:
             return None
 
