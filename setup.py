@@ -22,14 +22,14 @@ setup(
         'Development Status :: 3 - Alpha',
 
         # Intended for:
-        'Intended Audience :: Developers, Artists',
+        'Intended Audience :: Developers',
         'Topic :: Software Development :: Tools',
 
         # License:
-        'License :: Proprietary License',
+        'License :: MIT',
 
         # Supported Python versions:
-        'Programming Language :: Python :: 3.4.4',
+        'Programming Language :: Python :: >=3.4.4',
     ],
 
     # Keywords
