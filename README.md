@@ -5,13 +5,13 @@ A python wrapper for Nightbot API
 How to use:
 ```
 '''
-Copy Nightbot folder to project root.
+Copy NightPy folder to project root.
 '''
 
-from Nightbot.nightbot import Nightbot
+from NightPy.nightpy import NightPy
 
 
-nb = Nightbot('API TOKEN')
+np = NightPy('API TOKEN')
 
-nb.skip_current_queue_item()
+np.skip_current_queue_item()
 ```
