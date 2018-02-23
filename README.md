@@ -1,6 +1,8 @@
 # NightPy
 A python wrapper for Nightbot API
 
+API documentation : https://api-docs.nightbot.tv/
+
 
 How to use:
 ```
