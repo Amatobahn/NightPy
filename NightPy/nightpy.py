@@ -5,6 +5,7 @@ import json
 class NightPy:
 
     def __init__(self, client_id, client_secret, code):
+        self.auth_uri = 'https://api.nightbot.tv/oauth2/authorize'
         self.token_uri = 'https://api.nightbot.tv/oauth2/token'
         self.api_uri = 'https://api.nightbot.tv/1/'
         self.api_token = self.create_token(client_id, client_secret, code)
@@ -54,13 +55,13 @@ class NightPy:
     '''
     Create token from client_id, client_secret, code
     '''
-    def create_token(self, identification, secret, redirect_uri, code):
+    def create_token(self, client_id, client_secret, redirect_uri, code):
         payload = {
-            'client_id': identification,
-            'client_secret': secret,
+            'client_id': '{0}'.format(client_id),
+            'client_secret': '{0}'.format(client_secret),
             'grant_type': 'authorization_code',
-            'redirect_uri': redirect_uri,
-            'code': code
+            'redirect_uri': '{0}'.format(redirect_uri),
+            'code': '{0}'.format(code)
         }
         try:
             response = requests.post(self.token_uri, payload=payload)
@@ -149,7 +150,7 @@ class NightPy:
     '''
     Makes Nightbot send a message to the channel
     '''
-    def send_channel_mesage(self, message):
+    def send_channel_message(self, message):
         payload = {'message': '{0}'.format(message)}
         return self.api_request('channel/send', method='post', payload=payload)
 
