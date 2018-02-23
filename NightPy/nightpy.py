@@ -4,17 +4,80 @@ import json
 
 class NightPy:
 
-    def __init__(self, api_token):
+    def __init__(self, client_id, client_secret, code):
+        self.token_uri = 'https://api.nightbot.tv/oauth2/token'
         self.api_uri = 'https://api.nightbot.tv/1/'
-        self.api_token = api_token
+        self.api_token = self.create_token(client_id, client_secret, code)
+        self.client_data = [client_id, client_secret, code]
 
+    '''
+    Create token from client_id, client_secret, code
+    '''
+    def create_token(self, identification, secret, code):
+        payload = {
+            'client_id': identification,
+            'client_secret': secret,
+            'grant_type': 'authorization_code',
+            'redirect_uri': '',
+            'code': code
+        }
+        try:
+            response = requests.post(self.token_uri, payload=payload)
+            if response.status_code == 200:
+                token_data = json.loads(response.text)
+                return [token_data['access_token'], token_data['refresh_token']]
+            else:
+                return None
+        except requests.HTTPError:
+            print('HTTP Error occurred while trying to generate access token.')
+            return None
+
+    '''
+    Returns API user's access token
+    '''
+    def get_access_token(self):
+        return self.api_token[0]
+
+    '''
+    Returns API user's refresh token
+    '''
+    def get_refresh_token(self):
+        return self.api_token[1]
+
+    '''
+    Generates a new token from old token
+    '''
+    def refresh_token(self, redirect_uri):
+        payload = {
+            'client_id': self.client_data[0],
+            'client_secret': self.client_data[1],
+            'grant_type': 'refresh_token',
+            'redirect_uri': redirect_uri,
+            'refresh_token': self.api_token[1]
+        }
+
+        try:
+            response = requests.post(self.token_uri, payload=payload)
+            if response.status_code == 200:
+                token_data = json.loads(response.text)
+                self.api_token = [token_data['access_token'], token_data['refresh_token']]
+                return [token_data['access_token']]
+            else:
+                return None
+        except requests.HTTPError:
+            print('HTTP Error occurred while trying to refresh access token.')
+            return None
+
+    '''
+    Request Nightbot API
+    '''
     def api_request(self, endpoint, method='get', payload=None):
         method = method.lower()
         
         if payload is None:
             payload = ''
 
-        header = 'Authorization: Bearer {0}'.format(self.api_token)
+        header = 'Authorization: Bearer {0}'.format(self.api_token[0])
         try:
             if method is 'head':
                 response = requests.head('{0}{1}'.format(self.api_uri, endpoint), headers=header)
