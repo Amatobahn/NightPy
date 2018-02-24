@@ -4,11 +4,11 @@ import json
 
 class NightPy:
 
-    def __init__(self, client_id, client_secret, code):
+    def __init__(self, client_id, client_secret, redirect_uri, code):
         self.auth_uri = 'https://api.nightbot.tv/oauth2/authorize'
         self.token_uri = 'https://api.nightbot.tv/oauth2/token'
         self.api_uri = 'https://api.nightbot.tv/1/'
-        self.api_token = self.create_token(client_id, client_secret, code)
+        self.api_token = self.create_token(client_id, client_secret, redirect_uri, code)
         self.client_data = [client_id, client_secret, code]
 
     # -------------------------------------------------------------------------
