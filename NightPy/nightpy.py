@@ -64,7 +64,7 @@ class NightPy:
             'code': '{0}'.format(code)
         }
         try:
-            response = requests.post(self.token_uri, payload=payload)
+            response = requests.post(self.token_uri, data=payload)
             if response.status_code == 200:
                 token_data = json.loads(response.text)
                 return [token_data['access_token'], token_data['refresh_token']]
@@ -99,7 +99,7 @@ class NightPy:
         }
 
         try:
-            response = requests.post(self.token_uri, payload=payload)
+            response = requests.post(self.token_uri, data=payload)
             if response.status_code == 200:
                 token_data = json.loads(response.text)
                 self.api_token = [token_data['access_token'], token_data['refresh_token']]
@@ -117,7 +117,7 @@ class NightPy:
         payload = {'token': self.api_token[0]}
 
         try:
-            response = requests.post('{0}/revoke'.format(self.token_uri), payload=payload)
+            response = requests.post('{0}/revoke'.format(self.token_uri), data=payload)
             if response.status_code == 200:
                 print('Token has been revoked')
         except requests.HTTPError:
