@@ -14,7 +14,7 @@ setup(
     author_email='amatobahn@gmail.com',
 
     # License
-    license='MIT',
+    license='Apache License v2.0',
 
     # Classifiers
     classifiers=[
@@ -26,7 +26,7 @@ setup(
         'Topic :: Software Development :: Tools',
 
         # License:
-        'License :: MIT',
+        'License :: Apache License v2.0',
 
         # Supported Python versions:
         'Programming Language :: Python :: >=3.4.4',
