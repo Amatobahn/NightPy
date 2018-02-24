@@ -510,6 +510,34 @@ class NightPy:
         self.api_request('song_requests/queue', method='delete')
 
     '''
+    Plays the current playing queue item in the current user’s channel.
+    Return: QueueItem
+    '''
+    def play_current_queue_item(self):
+        data = self.api_request('song_requests/queue/play', method='post')
+        song = data['item']
+        track = song['track']
+        user = song['user']
+        t_data = Track(track['artist'], track['duration'], track['provider'], track['providerId'],
+                       track['title'], track['url'])
+        u_data = User(None, None, None, user['displayName'], user['name'], user['provider'], user['providerId'])
+        return QueueItem(song['_id'], song['createdAt'], t_data, u_data, song['updatedAt'])
+
+    '''
+    Pauses the current playing queue item in the current user’s channel.
+    Return: QueueItem
+    '''
+    def pause_current_queue_item(self):
+        data = self.api_request('song_requests/queue/pause', method='post')
+        song = data['item']
+        track = song['track']
+        user = song['user']
+        t_data = Track(track['artist'], track['duration'], track['provider'], track['providerId'],
+                       track['title'], track['url'])
+        u_data = User(None, None, None, user['displayName'], user['name'], user['provider'], user['providerId'])
+        return QueueItem(song['_id'], song['createdAt'], t_data, u_data, song['updatedAt'])
+
+    '''
     Skips the current playing queue item in the current user’s channel.
     Return: QueueItem
     '''
