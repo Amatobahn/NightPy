@@ -4,12 +4,12 @@ import json
 
 class NightPy:
 
-    def __init__(self, client_id, client_secret, redirect_uri, code):
+    def __init__(self, token):
         self.auth_uri = 'https://api.nightbot.tv/oauth2/authorize'
         self.token_uri = 'https://api.nightbot.tv/oauth2/token'
         self.api_uri = 'https://api.nightbot.tv/1/'
-        self.api_token = self.create_token(client_id, client_secret, redirect_uri, code)
-        self.client_data = [client_id, client_secret, code]
+        self.api_token = token
+        # self.client_data = [client_id, client_secret, code]
 
     # -------------------------------------------------------------------------
     # NIGHTBOT API
@@ -23,28 +23,27 @@ class NightPy:
         if payload is None:
             payload = ''
 
-        header = 'Authorization: Bearer {0}'.format(self.api_token[0])
+        header = {'Authorization': 'Bearer {0}'.format(self.api_token)}
         try:
-            if method is 'head':
+            if method == 'head':
                 response = requests.head('{0}{1}'.format(self.api_uri, endpoint), headers=header)
-            elif method is 'delete':
+            elif method == 'delete':
                 response = requests.delete('{0}{1}'.format(self.api_uri, endpoint), headers=header)
-            elif method is 'get':
+            elif method == 'get':
                 response = requests.get('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
-            elif method is 'options':
+            elif method == 'options':
                 response = requests.options('{0}{1}'.format(self.api_uri, endpoint), headers=header)
-            elif method is 'post':
+            elif method == 'post':
                 response = requests.post('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
-            elif method is 'put':
+            elif method == 'put':
                 response = requests.put('{0}{1}'.format(self.api_uri, endpoint), headers=header, data=payload)
             else:
                 response = None
-
             if response.status_code == 200:
                 return json.loads(response.text)
             else:
                 return None
-
+            print(response)
         except requests.HTTPError:
             print('HTTP Error occurred while trying to make request to Nightbot API.')
             return None
@@ -65,6 +64,7 @@ class NightPy:
         }
         try:
             response = requests.post(self.token_uri, data=payload)
+            print(response.text)
             if response.status_code == 200:
                 token_data = json.loads(response.text)
                 return [token_data['access_token'], token_data['refresh_token']]
@@ -78,13 +78,13 @@ class NightPy:
     Returns API user's access token
     '''
     def get_access_token(self):
-        return self.api_token[0]
+        return self.api_token
 
     '''
     Returns API user's refresh token
     '''
     def get_refresh_token(self):
-        return self.api_token[1]
+        return self.api_token
 
     '''
     Generates a new token from old token
