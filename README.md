@@ -13,7 +13,7 @@ Copy NightPy folder to project root.
 from NightPy.nightpy import NightPy
 
 
-np = NightPy(client_id, client_secret, code)
+np = NightPy(api_token_here)
 
 np.skip_current_queue_item()
 ```
