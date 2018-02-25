@@ -1,4 +1,5 @@
 ![alt text](http://iamgregamato.com/content/img/nightpy/np_logo.svg)
+
 A python wrapper for Nightbot API
 
 API documentation : https://api-docs.nightbot.tv/
