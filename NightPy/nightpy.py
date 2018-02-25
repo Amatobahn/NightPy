@@ -43,6 +43,7 @@ class NightPy:
             if response.status_code == 200:
                 return json.loads(response.text)
             else:
+                print(json.loads(response.text)['message'])
                 return None
         except requests.HTTPError:
             print('HTTP Error occurred while trying to make request to Nightbot API.')
@@ -470,6 +471,20 @@ class NightPy:
     # -------------------------------------------------------------------------
     # SCOPE: SONG REQUESTS QUEUE
     # -------------------------------------------------------------------------
+    '''
+    Gets the current API user’s current song
+    Return: QueueItem
+    '''
+    def get_current_song(self):
+        data = self.api_request('song_requests/queue', method='get')
+        song = data['_currentSong']
+        track = song['track']
+        user = song['user']
+        t_data = Track(track['artist'], track['duration'], track['provider'], track['providerId'],
+                       track['title'], track['url'])
+        u_data = User(None, None, None, user['displayName'], user['name'], user['provider'], user['providerId'])
+        return QueueItem(song['_id'], song['createdAt'], t_data, u_data, song['updatedAt'])
+
     '''
     Gets the current API user’s song request queue
     Return: List of QueueItem
