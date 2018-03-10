@@ -45,8 +45,8 @@ class NightPy:
             else:
                 print(json.loads(response.text)['message'])
                 return None
-        except requests.HTTPError:
-            print('HTTP Error occurred while trying to make request to Nightbot API.')
+        except (requests.HTTPError, requests.exceptions.SSLError) as e:
+            print('HTTP Error occurred while trying to make request to Nightbot API.', e)
             return None
 
     # -------------------------------------------------------------------------
