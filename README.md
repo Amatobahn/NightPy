@@ -1,4 +1,4 @@
-![alt text](http://iamgregamato.com/content/img/nightpy/np_logo.svg)
+![alt text](http://http://iamgregamato.com/img/np_logo.svg)
 
 A python wrapper for Nightbot API
 
