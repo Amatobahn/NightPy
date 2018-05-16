@@ -1,8 +1,8 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='NightPy',
-    version='2018.1.0',
+    version='2018.1.1',
 
     description='NightBot API wrapper.',
 
@@ -19,21 +19,16 @@ setup(
     # Classifiers
     classifiers=[
         # Project Stage:
-        'Development Status :: 3 - Alpha',
-
-        # Intended for:
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Tools',
-
-        # License:
-        'License :: Apache License v2.0',
-
-        # Supported Python versions:
-        'Programming Language :: Python :: >=3.4.4',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 3 :: Only',
     ],
-
     # Keywords
-    keywords='development tools api',
+    keywords=['NightPy', 'NightBot', 'Amatobahn', 'API'],
+
+    packages=['NightPy'],
 
     # Required dependencies. Will be installed by pip
     # when the project is installed.
