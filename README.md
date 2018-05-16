@@ -5,12 +5,16 @@ A python wrapper for Nightbot API
 API documentation : https://api-docs.nightbot.tv/
 
 
-How to use:
+### Install 
+From PyPI:
+```bash
+pip install NightPy
 ```
-'''
-Copy NightPy folder to project root or install the wheel file using pip.
-'''
-
+Using Distributed Wheel from GitHub:
+```bash
+pip install NightPy-2018.1.1-py3-none-any.whl
+```
+```python
 from NightPy.nightpy import NightPy
 
 
