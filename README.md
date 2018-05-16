@@ -14,6 +14,7 @@ Using Distributed Wheel from GitHub:
 ```bash
 pip install NightPy-2018.1.1-py3-none-any.whl
 ```
+### Usage
 ```python
 from NightPy.nightpy import NightPy
 
