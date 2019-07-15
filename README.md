@@ -1,4 +1,9 @@
 ![alt text](http://www.iamgregamato.com/img/np_logo.svg)
+<p align=center>
+  <a href="https://badge.fury.io/py/NightPy">
+    <img src="https://badge.fury.io/py/NightPy.svg" alt="PyPI version" height="18">
+  </a>
+</p>
 
 A python wrapper for Nightbot API
 
